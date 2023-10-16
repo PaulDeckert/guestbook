@@ -16,6 +16,7 @@
 package guestbook;
 
 import java.time.LocalDateTime;
+import java.util.regex.*;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -34,7 +35,7 @@ import org.springframework.util.Assert;
 class GuestbookEntry {
 
 	private @Id @GeneratedValue Long id;
-	private final String name, text;
+	private final String name, text, number;
 	private final LocalDateTime date;
 
 	/**
@@ -43,13 +44,15 @@ class GuestbookEntry {
 	 * @param name must not be {@literal null} or empty
 	 * @param text must not be {@literal null} or empty
 	 */
-	public GuestbookEntry(String name, String text) {
+	public GuestbookEntry(String name, String text, String number) {
 
 		Assert.hasText(name, "Name must not be null or empty!");
 		Assert.hasText(text, "Text must not be null or empty!");
+		Assert.isTrue(isNumber(number), "Phone number must be valid!");
 
 		this.name = name;
 		this.text = text;
+		this.number = number;
 		this.date = LocalDateTime.now();
 	}
 
@@ -57,6 +60,7 @@ class GuestbookEntry {
 	private GuestbookEntry() {
 		this.name = null;
 		this.text = null;
+		this.number = null;
 		this.date = null;
 	}
 
@@ -74,5 +78,21 @@ class GuestbookEntry {
 
 	public String getText() {
 		return text;
+	}
+
+	public String getNumber() {
+		return number;
+	}
+	
+	private boolean isNumber(String num) {
+		String patterns
+		= "^(\\+\\d{1,3}( )?)?((\\(\\d{3}\\))|\\d{3})[- .]?\\d{3}[- .]?\\d{4}$" 
+		+ "|^(\\+\\d{1,3}( )?)?(\\d{3}[ ]?){2}\\d{3}$" 
+		+ "|^(\\+\\d{1,3}( )?)?(\\d{3}[ ]?)(\\d{2}[ ]?){2}\\d{2}$";
+
+		Pattern pattern = Pattern.compile(patterns);
+		Matcher matcher = pattern.matcher(num);
+
+		return matcher.matches();
 	}
 }
